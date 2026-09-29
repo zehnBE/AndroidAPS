@@ -228,6 +228,9 @@ class ComposeMainActivity : MetroAppCompatActivity() {
     }
     private var navController: NavHostController? = null
     private val _autoShowNotifications = mutableStateOf(false)
+
+    // CarbCam: pending carbs from external Intent (via WizardLaunchActivity), consumed by AppContent
+    private val pendingCarbsIntent = mutableStateOf<Pair<Int, String?>?>(null)
     private val disposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -276,6 +279,8 @@ class ComposeMainActivity : MetroAppCompatActivity() {
 
         observePreferences()
 
+        consumeExternalCarbsIntent(intent)
+
         setContent {
             MainContent()
         }
@@ -323,11 +328,37 @@ class ComposeMainActivity : MetroAppCompatActivity() {
         )
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        consumeExternalCarbsIntent(intent)
+    }
+
+    private fun consumeExternalCarbsIntent(intent: Intent?) {
+        intent ?: return
+        val carbs = intent.getIntExtra("external_carbs", 0)
+        if (carbs <= 0) return
+        val notes = intent.getStringExtra("external_notes")
+        // Consume extras so a config change does not re-trigger the navigation
+        intent.removeExtra("external_carbs")
+        intent.removeExtra("external_notes")
+        pendingCarbsIntent.value = carbs to notes
+    }
+
     @SuppressLint("BatteryLife")
     @Composable
     private fun AppContent(navController: NavHostController) {
         // Trigger initial refresh when app content first appears (after init completes)
         LaunchedEffect(Unit) { refreshOnResume() }
+
+        // CarbCam: route pending external carbs intent to the Bolus Wizard.
+        // Consumes the state and navigates to AppRoute.WizardDialog with prefilled carbs+notes.
+        LaunchedEffect(pendingCarbsIntent.value) {
+            pendingCarbsIntent.value?.let { (carbs, notes) ->
+                navController.navigate(AppRoute.WizardDialog.createRoute(carbs = carbs, notes = notes))
+                pendingCarbsIntent.value = null
+            }
+        }
 
         // Track last navigated route as a Crashlytics custom key for crash reports
         DisposableEffect(navController) {
