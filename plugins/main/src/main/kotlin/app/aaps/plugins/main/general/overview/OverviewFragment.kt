@@ -992,7 +992,8 @@ class OverviewFragment : DaggerFragment(), View.OnClickListener, OnLongClickList
             rh.gs(app.aaps.core.ui.R.string.basal) + ": " + rh.gs(app.aaps.core.ui.R.string.format_insulin_units, basalIob().basaliob)
 
     private fun updateIobCob() {
-        val iobText = iobText()
+        // LOCAL BUILD BYPASS: iob display - always show full breakdown (gesamt/bolus/basal)
+        val iobText = iobDialogText()
         val iobDialogText = iobDialogText()
         val displayText = iobCobCalculator.getCobInfo("Overview COB").displayText(rh, decimalFormatter)
         val lastCarbsTime = persistenceLayer.getNewestCarbs()?.timestamp ?: 0L
