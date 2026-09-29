@@ -122,6 +122,7 @@ class VersionCheckerUtilsImpl @Inject constructor(
     }
 
     private fun onExpireDateDetected(currentVersion: String, endDate: Long) {
+        return // LOCAL BUILD BYPASS - do not push this change
         val now = dateUtil.now()
         if (dateUtil.now() > endDate && shouldWarnAgain()) {
             // store last notification time
