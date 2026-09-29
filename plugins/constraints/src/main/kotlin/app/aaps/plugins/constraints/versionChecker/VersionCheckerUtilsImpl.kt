@@ -112,6 +112,7 @@ class VersionCheckerUtilsImpl @Inject constructor(
     }
 
     private fun onNewVersionDetected(currentVersion: String, newVersion: String?): Boolean {
+        return true // LOCAL BUILD BYPASS: new-version notice suppressed. Do not push.
         val now = dateUtil.now()
         if (dateUtil.isAfterNoon() && now > preferences.get(VersionCheckerLongKey.LastVersionCheckWarning) + warnEvery(0)) {
             aapsLogger.debug(LTag.CORE, "Version $currentVersion outdated. Found $newVersion")
@@ -151,11 +152,8 @@ class VersionCheckerUtilsImpl @Inject constructor(
     }
 
     private fun warnEvery(expiration: Long): Long =
-        when {
-            expiration - dateUtil.now() > T.days(28).msecs() -> T.days(7).msecs()
-            expiration - dateUtil.now() > T.days(14).msecs() -> T.days(3).msecs()
-            else                                             -> T.days(1).msecs()
-        }
+        // LOCAL BUILD BYPASS: warn every 9999 days = effectively never. Do not push.
+        T.days(9999).msecs()
 }
 
 fun String.numericVersionPart(): String =
