@@ -549,7 +549,8 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
     }
 
     private fun handleExternalWizardIntent(intent: Intent?) {
-        val carbs = intent?.getIntExtra("open_wizard_carbs", 0) ?: 0
+        intent ?: return
+        val carbs = intent.getIntExtra("open_wizard_carbs", 0)
         if (carbs <= 0) return
 
         val notes = intent.getStringExtra("open_wizard_notes") ?: ""
