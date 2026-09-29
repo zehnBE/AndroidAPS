@@ -266,6 +266,8 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
         // Setup views on 2nd and next activity start
         // On 1st start app is still initializing, start() is delayed and run from EventAppInitialized
         if (config.appInitialized) setupViews()
+    
+        handleExternalWizardIntent(intent)
     }
 
     private fun start() {
@@ -539,4 +541,29 @@ class MainActivity : DaggerAppCompatActivityWithResult() {
         }
     }
 
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleExternalWizardIntent(intent)
+    }
+
+    private fun handleExternalWizardIntent(intent: Intent?) {
+        intent ?: return
+        val carbs = intent.getIntExtra("open_wizard_carbs", 0)
+        if (carbs <= 0) return
+
+        val notes = intent.getStringExtra("open_wizard_notes") ?: ""
+
+        // Consume extras so a configuration change does not re-trigger the wizard
+        intent.removeExtra("open_wizard_carbs")
+        intent.removeExtra("open_wizard_notes")
+
+        val wizard = app.aaps.ui.dialogs.WizardDialog()
+        wizard.arguments = Bundle().apply {
+            putDouble("carbs_input", carbs.toDouble())
+            putString("notes_input", notes)
+        }
+        wizard.show(supportFragmentManager, "WizardDialog")
+    }
 }
