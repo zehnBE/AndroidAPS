@@ -625,7 +625,9 @@ class OmnipodDashPumpPlugin @Inject constructor(
             bolusDeliveryInProgress = true
             aapsLogger.info(LTag.PUMP, "Delivering treatment: $detailedBolusInfo $bolusCanceled")
             val requestedBolusAmount = detailedBolusInfo.insulin
-            if (requestedBolusAmount > reservoirLevel) {
+            // LOCAL BUILD BYPASS: reservoir check disabled - pod peeps when actually empty,
+            // and Omnipod reports 0 while there is still usable insulin. Do not push.
+            if (false && requestedBolusAmount > reservoirLevel) {
                 return pumpEnactResultProvider.get()
                     .success(false)
                     .enacted(false)
