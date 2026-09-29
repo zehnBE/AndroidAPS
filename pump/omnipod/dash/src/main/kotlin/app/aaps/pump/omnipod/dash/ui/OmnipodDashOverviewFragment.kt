@@ -363,7 +363,10 @@ class OmnipodDashOverviewFragment : DaggerFragment() {
 
             // Update Pod expiry time
             val expiresAt = podStateManager.expiry
-            podInfoBinding.podExpiryDate.text = expiresAt?.let {
+            // LOCAL BUILD BYPASS: pod display shows 72h+8h grace period; color logic
+            // below keeps using the real 'expiresAt' so warnings still fire at 72h. Do not push.
+            val expiresAtDisplay = expiresAt?.plusHours(8)
+            podInfoBinding.podExpiryDate.text = expiresAtDisplay?.let {
                 dateUtil.dateAndTimeString(it.toEpochSecond() * 1000)
             }
                 ?: PLACEHOLDER
